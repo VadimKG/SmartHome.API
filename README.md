@@ -60,6 +60,8 @@ git clone [https://github.com/VadimKG/SmartHome.API.git](https://github.com/Vadi
 
 cd SmartHome.API
 
+cp .env.example .env
+
 docker compose up --build
 
 ```

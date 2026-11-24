@@ -13,6 +13,8 @@ using SmartHome.Infrastructure;
 using SmartHome.Infrastructure.Data;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
+using System.Threading.RateLimiting;
+using Microsoft.AspNetCore.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -101,6 +103,18 @@ builder.Services.AddValidatorsFromAssemblyContaining<CreateDeviceDtoValidator>()
 builder.Services.AddApplicationLayer();
 builder.Services.AddInfrastructureLayer(builder.Configuration);
 
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+    options.AddFixedWindowLimiter("fixed", limiterOptions =>
+    {
+        limiterOptions.PermitLimit = 5;
+        limiterOptions.Window = TimeSpan.FromSeconds(10);
+        limiterOptions.QueueLimit = 0;
+    });
+});
+
 var app = builder.Build();
 
 app.UseMiddleware<GlobalExceptionMiddleware>();
@@ -119,8 +133,8 @@ app.UseCors("AllowAll");
 app.MapHealthChecks("/health");
 
 app.UseAuthentication();
-
 app.UseAuthorization();
+app.UseRateLimiter();
 
 app.MapControllers();
 

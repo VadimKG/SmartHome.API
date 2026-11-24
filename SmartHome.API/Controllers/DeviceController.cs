@@ -5,12 +5,14 @@ using SmartHome.Core.Models;
 using System.Security.Claims;
 using SmartHome.Core.Services;
 using Asp.Versioning;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace SmartHome.API.Controllers;
 
 [Authorize]
 [ApiController]
 [ApiVersion("1.0")]
+[EnableRateLimiting("fixed")]
 [Route("api/v{version:apiVersion}/[controller]")]
 public class DeviceController : ControllerBase
 {

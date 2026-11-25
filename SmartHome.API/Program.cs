@@ -20,9 +20,12 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Host.UseSerilog((context, configuration) =>
 {
+    var logTemplate = "[{Timestamp:HH:mm:ss} {Level:u3}] [{CorrelationId}] {Message:lj}{NewLine}{Exception}";
+
     configuration
-        .WriteTo.Console()
-        .WriteTo.File("logs/log-.txt", rollingInterval: RollingInterval.Day);
+        .Enrich.FromLogContext()
+        .WriteTo.Console(outputTemplate: logTemplate)
+        .WriteTo.File("logs/log-.txt", rollingInterval: RollingInterval.Day, outputTemplate: logTemplate);
 });
 
 builder.Services.Configure<JwtOptions>(
@@ -116,6 +119,8 @@ builder.Services.AddRateLimiter(options =>
 });
 
 var app = builder.Build();
+
+app.UseMiddleware<CorrelationIdMiddleware>();
 
 app.UseMiddleware<GlobalExceptionMiddleware>();
 
